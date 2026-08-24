@@ -1,5 +1,31 @@
 const pool = require("../config/db");
 
+const attachImages = async (vehicles) => {
+  if (vehicles.length === 0) return vehicles;
+
+  const ids = vehicles.map((vehicle) => vehicle.id);
+  const images = await pool.query(
+    `SELECT id, vehicle_id, image_url, created_at
+     FROM vehicle_images
+     WHERE vehicle_id = ANY($1::int[])
+     ORDER BY created_at ASC`,
+    [ids]
+  );
+
+  const imagesByVehicle = {};
+  for (const image of images.rows) {
+    if (!imagesByVehicle[image.vehicle_id]) {
+      imagesByVehicle[image.vehicle_id] = [];
+    }
+    imagesByVehicle[image.vehicle_id].push(image);
+  }
+
+  return vehicles.map((vehicle) => ({
+    ...vehicle,
+    images: imagesByVehicle[vehicle.id] || [],
+  }));
+};
+
 // Get all vehicles
 const getVehicles = async (req, res) => {
   try {
@@ -7,7 +33,7 @@ const getVehicles = async (req, res) => {
       "SELECT * FROM vehicles ORDER BY created_at DESC"
     );
 
-    res.status(200).json(result.rows);
+    res.status(200).json(await attachImages(result.rows));
   } catch (error) {
     console.error("Error fetching vehicles:", error);
 
@@ -33,7 +59,9 @@ const getVehicleById = async (req, res) => {
       });
     }
 
-    res.status(200).json(result.rows[0]);
+    const [vehicle] = await attachImages(result.rows);
+
+    res.status(200).json(vehicle);
   } catch (error) {
     console.error("Error fetching vehicle:", error);
 

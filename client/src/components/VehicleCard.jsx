@@ -12,9 +12,11 @@ import SpeedIcon from "@mui/icons-material/Speed";
 import LocalGasStationIcon from "@mui/icons-material/LocalGasStation";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { formatPrice } from "../utils/format";
+import { getPrimaryImageUrl } from "../utils/vehicleImages";
 
 function VehicleCard({ vehicle }) {
   const navigate = useNavigate();
+  const imageUrl = getPrimaryImageUrl(vehicle);
 
   return (
     <Card
@@ -29,7 +31,6 @@ function VehicleCard({ vehicle }) {
         },
       }}
     >
-      {/* Image placeholder */}
       <Box
         sx={{
           height: 200,
@@ -37,9 +38,24 @@ function VehicleCard({ vehicle }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          overflow: "hidden",
         }}
       >
-        <DirectionsCarIcon sx={{ fontSize: 64, color: "#9ca3af" }} />
+        {imageUrl ? (
+          <Box
+            component="img"
+            src={imageUrl}
+            alt={`${vehicle.brand} ${vehicle.model}`}
+            sx={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              display: "block",
+            }}
+          />
+        ) : (
+          <DirectionsCarIcon sx={{ fontSize: 64, color: "#9ca3af" }} />
+        )}
       </Box>
 
       <CardContent sx={{ flexGrow: 1 }}>

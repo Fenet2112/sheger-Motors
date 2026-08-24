@@ -18,6 +18,7 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { getVehicle } from "../services/api";
 import { formatPrice } from "../utils/format";
+import { getVehicleImages } from "../utils/vehicleImages";
 import EmptyState from "../components/EmptyState";
 
 function SpecRow({ label, value }) {
@@ -43,6 +44,7 @@ function VehicleDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [notFound, setNotFound] = useState(false);
+  const [activeImage, setActiveImage] = useState(0);
 
   useEffect(() => {
     setLoading(true);
@@ -114,6 +116,9 @@ function VehicleDetails() {
     );
   }
 
+  const images = getVehicleImages(vehicle);
+  const currentImage = images[activeImage] || images[0];
+
   return (
     <Box sx={{ paddingTop: "64px", pb: 6 }}>
       <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -129,26 +134,66 @@ function VehicleDetails() {
 
         {/* Top section: image + title/price/CTA */}
         <Grid container spacing={4} sx={{ mb: 4 }}>
-          {/* Left: image placeholder */}
           <Grid item xs={12} md={6}>
-            <Box
-              sx={{
-                height: { xs: 250, md: 400 },
-                bgcolor: "grey.200",
-                borderRadius: 2,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <DirectionsCarIcon
-                sx={{ fontSize: 80, color: "grey.500", mb: 1 }}
-              />
-              <Typography variant="body2" color="text.secondary">
-                Photos coming soon
-              </Typography>
-            </Box>
+            {currentImage ? (
+              <Box>
+                <Box
+                  component="img"
+                  src={currentImage.image_url}
+                  alt={`${vehicle.brand} ${vehicle.model}`}
+                  sx={{
+                    width: "100%",
+                    height: { xs: 250, md: 400 },
+                    objectFit: "cover",
+                    borderRadius: 2,
+                    display: "block",
+                    bgcolor: "grey.200",
+                  }}
+                />
+                {images.length > 1 && (
+                  <Stack direction="row" spacing={1} sx={{ mt: 1.5, overflowX: "auto" }}>
+                    {images.map((image, index) => (
+                      <Box
+                        key={image.id || index}
+                        component="img"
+                        src={image.image_url}
+                        alt={`${vehicle.brand} ${vehicle.model} ${index + 1}`}
+                        onClick={() => setActiveImage(index)}
+                        sx={{
+                          width: 72,
+                          height: 56,
+                          objectFit: "cover",
+                          borderRadius: 1,
+                          cursor: "pointer",
+                          flexShrink: 0,
+                          border: index === activeImage ? "2px solid" : "2px solid transparent",
+                          borderColor: index === activeImage ? "primary.main" : "transparent",
+                        }}
+                      />
+                    ))}
+                  </Stack>
+                )}
+              </Box>
+            ) : (
+              <Box
+                sx={{
+                  height: { xs: 250, md: 400 },
+                  bgcolor: "grey.200",
+                  borderRadius: 2,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <DirectionsCarIcon
+                  sx={{ fontSize: 80, color: "grey.500", mb: 1 }}
+                />
+                <Typography variant="body2" color="text.secondary">
+                  Photos coming soon
+                </Typography>
+              </Box>
+            )}
           </Grid>
 
           {/* Right: details */}

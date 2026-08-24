@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Single Axios instance with base URL pointing to the API server
 const api = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
 });
 
 // Request interceptor: reads token from localStorage on every request

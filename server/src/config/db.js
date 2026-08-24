@@ -1,9 +1,13 @@
 const { Pool } = require("pg");
 require("dotenv").config();
 
+const connectionString = process.env.DATABASE_URL;
+const isSupabase = connectionString?.includes("supabase.com");
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString,
   connectionTimeoutMillis: 5000,
+  ssl: isSupabase ? { rejectUnauthorized: false } : undefined,
 });
 
 pool.on("connect", () => {
