@@ -79,16 +79,46 @@ const deleteVehicleImage = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const result = await pool.query(
-      "DELETE FROM vehicle_images WHERE id = $1 RETURNING *",
+    // Fetch the image record first so we can delete from Supabase
+    const imageResult = await pool.query(
+      "SELECT * FROM vehicle_images WHERE id = $1",
       [id]
     );
 
-    if (result.rows.length === 0) {
+    if (imageResult.rows.length === 0) {
       return res.status(404).json({
         message: "Image not found",
       });
     }
+
+    const image = imageResult.rows[0];
+
+    // Attempt to delete from Supabase Storage.
+    // The public URL format is:
+    //   https://<project>.supabase.co/storage/v1/object/public/vehicle-images/vehicle-3/file.jpg
+    // We extract the path after "/vehicle-images/" to get the storage key.
+    try {
+      const url = image.image_url;
+      const bucketMarker = "/object/public/vehicle-images/";
+      const markerIndex = url.indexOf(bucketMarker);
+      if (markerIndex !== -1) {
+        const storagePath = url.substring(markerIndex + bucketMarker.length);
+        const supabase = require("../config/supabase");
+        const { error } = await supabase.storage
+          .from("vehicle-images")
+          .remove([storagePath]);
+        if (error) {
+          console.warn("Supabase storage deletion warning:", error.message);
+          // Non-fatal: we still delete the DB record even if storage fails
+        }
+      }
+    } catch (storageErr) {
+      console.warn("Could not delete from Supabase storage:", storageErr.message);
+      // Non-fatal
+    }
+
+    // Delete the database record
+    await pool.query("DELETE FROM vehicle_images WHERE id = $1", [id]);
 
     res.status(200).json({
       message: "Vehicle image deleted successfully",

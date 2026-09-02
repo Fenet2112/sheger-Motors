@@ -6,6 +6,7 @@ const pool = require("./config/db");
 const vehicleRoutes = require("./routes/vehicleRoutes");
 const authRoutes = require("./routes/authRoutes");
 const imageRoutes = require("./routes/imageRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use(express.json());
 app.use("/api/vehicles", vehicleRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/images", imageRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Home route
 app.get("/", (req, res) => {

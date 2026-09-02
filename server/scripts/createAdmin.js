@@ -5,7 +5,7 @@ require("dotenv").config();
 const createAdmin = async () => {
   try {
     const name = "Sheger Motors Admin";
-    const email = "admin@shegermotors.com";
+    const email = "fenufen491@gmail.com";
     const password = "ChangeThisPassword123!";
 
     const hashedPassword = await bcrypt.hash(password, 10);

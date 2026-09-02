@@ -133,7 +133,7 @@ Default login:
 
 | Field | Value |
 | --- | --- |
-| Email | `admin@shegermotors.com` |
+| Email | `fenufen491@gmail.com` |
 | Password | `ChangeThisPassword123!` |
 
 Change this password before using the app in production.

@@ -1,9 +1,10 @@
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import AdminLayout from "./components/admin/AdminLayout";
 
 import Home from "./pages/Home";
 import Vehicles from "./pages/vehicles";
@@ -11,6 +12,9 @@ import VehicleDetails from "./pages/VehicleDetails";
 import Contact from "./pages/Contact";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminSettings from "./pages/AdminSettings";
+import AdminPhotos from "./pages/AdminPhotos";
+import AdminAddVehicle from "./pages/AdminAddVehicle";
 
 // MUI theme
 const theme = createTheme({
@@ -65,7 +69,7 @@ const theme = createTheme({
   },
 });
 
-// Protected route — redirects to /admin/login if no token in localStorage
+// Protected route — redirects to /admin/login if no token
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem("token");
   if (!token || token === "") {
@@ -74,28 +78,68 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
+// Wraps a page in the admin layout + protection
+function AdminPage({ children }) {
+  return (
+    <ProtectedRoute>
+      <AdminLayout>{children}</AdminLayout>
+    </ProtectedRoute>
+  );
+}
+
+// Public layout wrapper — shows Navbar + Footer, hides on /admin/* routes
+function PublicLayout({ children }) {
+  const location = useLocation();
+  const isAdmin = location.pathname.startsWith("/admin");
+  return (
+    <>
+      {!isAdmin && <Navbar />}
+      {children}
+      {!isAdmin && <Footer />}
+    </>
+  );
+}
+
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <BrowserRouter>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/vehicles" element={<Vehicles />} />
-          <Route path="/vehicles/:id" element={<VehicleDetails />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route
-            path="/admin/dashboard"
-            element={
-              <ProtectedRoute>
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-        <Footer />
+        <PublicLayout>
+          <Routes>
+            {/* ── Public routes ── */}
+            <Route path="/" element={<Home />} />
+            <Route path="/vehicles" element={<Vehicles />} />
+            <Route path="/vehicles/:id" element={<VehicleDetails />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+
+            {/* ── Admin routes (protected + sidebar layout) ── */}
+            <Route
+              path="/admin/dashboard"
+              element={<AdminPage><AdminDashboard /></AdminPage>}
+            />
+            <Route
+              path="/admin/vehicles"
+              element={<AdminPage><AdminDashboard /></AdminPage>}
+            />
+            <Route
+              path="/admin/vehicles/add"
+              element={<AdminPage><AdminAddVehicle /></AdminPage>}
+            />
+            <Route
+              path="/admin/photos"
+              element={<AdminPage><AdminPhotos /></AdminPage>}
+            />
+            <Route
+              path="/admin/settings"
+              element={<AdminPage><AdminSettings /></AdminPage>}
+            />
+
+            {/* Redirect /admin → /admin/dashboard */}
+            <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+          </Routes>
+        </PublicLayout>
       </BrowserRouter>
     </ThemeProvider>
   );

@@ -53,5 +53,23 @@ export const uploadVehicleImage = (vehicleId, imageFile) => {
   });
 };
 
+/** Fetch admin dashboard statistics */
+export const getAdminStats = () => api.get("/admin/stats");
+
+/** Fetch all images for a vehicle */
+export const getVehicleImages = (vehicleId) => api.get(`/images/${vehicleId}`);
+
+/** Delete a single vehicle image by its image record ID */
+export const deleteVehicleImage = (imageId) => api.delete(`/images/${imageId}`);
+
+/** Fetch application settings */
+export const getSettings = () => api.get("/admin/settings");
+
+/** Update application settings */
+export const updateSettings = (data) => api.put("/admin/settings", data);
+
+/** Change admin password */
+export const changePassword = (data) => api.put("/auth/change-password", data);
+
 // Default export for callers that need the raw instance
 export default api;
